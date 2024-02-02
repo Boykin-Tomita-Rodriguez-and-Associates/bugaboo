@@ -1,7 +1,10 @@
 const { Sequelize, db } = require('../db')
 
 let Bug = db.define('bug', {
-    isFixed: Sequelize.BOOLEAN,
+    isFixed: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
+     },
     error: Sequelize.STRING
 })
 
