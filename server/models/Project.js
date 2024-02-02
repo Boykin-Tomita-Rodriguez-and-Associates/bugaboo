@@ -1,7 +1,10 @@
 const { Sequelize, db } = require('../db')
 
 let Project = db.define('project', {
-    isComplete: Sequelize.BOOLEAN,
+    isComplete: {
+       type: Sequelize.BOOLEAN,
+       defaultValue: false
+    },
     name: Sequelize.STRING
 })
 
