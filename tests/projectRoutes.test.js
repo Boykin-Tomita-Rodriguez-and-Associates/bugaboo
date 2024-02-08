@@ -64,4 +64,17 @@ describe("Project testing", () => {
       expect(projects.length).toEqual(projectsLength - 1);
     });
   });
+
+  describe("Update a project", () => {
+    it("Successfully updates a project", async () => {
+        const response = await request(app)
+        .put("/projects/1")
+        .send({name: "Updated project name"}); 
+        
+        const updatedProject = await Project.findByPk(1);
+ 
+        expect(response.statusCode).toBe(200);
+        expect(response.body.name).toBe(updatedProject.name)
+    });
+  });
 });

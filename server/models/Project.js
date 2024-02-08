@@ -6,6 +6,6 @@ let Project = db.define('project', {
        defaultValue: false
     },
     name: Sequelize.STRING
-})
+});
 
 module.exports = Project

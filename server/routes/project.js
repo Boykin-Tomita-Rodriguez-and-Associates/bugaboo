@@ -36,7 +36,24 @@ projectRouter.post("/", async (req, res, next) => {
   }
 });
 
-//UPDATE a project - add a bug & update status (user & admin)
+//UPDATE a project
+projectRouter.put("/:id", async (req, res, next) => {
+    try{
+        const id = req.params.id; 
+        const {name, isComplete} = req.body
+        await Project.update({name, isComplete}, {where: {id: id}});
+       //Get the newly updated project   
+       const updatedProject = await Project.findByPk(id, {
+            include: {
+               model: Bug
+            }
+        });
+        //Send it back
+        res.json(updatedProject);
+    }catch(error){
+        next(error);
+    };
+});
 
 //DELETE a project (admin)
 projectRouter.delete("/:id", async (req, res, next) => {
