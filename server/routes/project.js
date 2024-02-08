@@ -1,9 +1,8 @@
 const { Router } = require("express");
 const { User, Project, Bug } = require("../models/index");
 const express = require("express");
-
+const bugRouter = require("./bug");
 const projectRouter = Router();
-
 //GET projects (users & admin)
 projectRouter.get("/", async (req, res, next) => {
   try {
@@ -85,5 +84,13 @@ projectRouter.delete("/:id", async (req, res, next) => {
     next(error);
   }
 });
+
+/// Bug Connection 
+
+projectRouter.use('/:projectId/bugs', async(req, res, next)=>{
+  console.log("hello????", req.params)
+  req.projectId = req.params.projectId;
+  next()
+}, bugRouter);
 
 module.exports = projectRouter;
