@@ -41,19 +41,20 @@ projectRouter.put("/:id", async (req, res, next) => {
     try{
         console.log(req.body.bug)
         const id = req.params.id; 
-        //First, check is a bug was included, if so create it and assign to the exisiting project.
-        if(req.body.bug){
-            const error = req.body.bug.error
-            console.log("we have a bug!")
-            const newBug = await Bug.create({error: error, projectId: id})
-            console.log(newBug)
-        };
-
-        //Then check to see if any other part of the project should be updated
-        if(req.body.name || req.body.isComplete){
-            const response = await Project.update(req.body, {where: {id: id}});
-        };
+        //MOVE TO NESTED BUG ROUTE
+          //First, check is a bug was included, if so create it and assign to the exisiting project.
+          //if(req.body.bug){
+          //    const error = req.body.bug.error
+          //    console.log("we have a bug!")
+          //    const newBug = await Bug.create({error: error, projectId: id})
+          //    console.log(newBug)
+          //};
+          //Then check to see if any other part of the project should be updated
         
+        const {name, isComplete} = req.body
+        const response = await Project.update({name, isComplete}, {where: {id: id}});
+      
+        console.log(id)
        //Get the newly updated project   
        const updatedProject = await Project.findAll({
             where: {
@@ -64,6 +65,7 @@ projectRouter.put("/:id", async (req, res, next) => {
             }
         });
         //Send it back
+        console.log(updatedProject);
         res.json(updatedProject);
     }catch(error){
         next(error);
