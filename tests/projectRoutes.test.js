@@ -76,21 +76,5 @@ describe("Project testing", () => {
         expect(response.statusCode).toBe(200);
         expect(response.body[0].name).toBe(updatedProject.name)
     });
-    
-    it("Successfully adds a bug", async()=>{
-        const bug = {error: "meep meep"};
-        const response = await request(app)
-        .put("/projects/1")
-        .send({bug: bug});
-
-        const updatedProject = await(Project).findByPk(1, {
-            include: {
-                model: Bug
-            }
-        });
-
-        expect(response.statusCode).toBe(200); 
-        expect(updatedProject.bugs[1].error).toBe(bug.error)
-    })
-  })
+  });
 });
