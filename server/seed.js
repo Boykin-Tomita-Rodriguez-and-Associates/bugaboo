@@ -4,12 +4,13 @@ const {users, projects, bugs} = require('./seedData');
 
 const seed = async () => {
     try{
-
-        await db.sync({ force: true }); // recreate db
+await db.sync({ force: true });
+         // recreate db
         await User.bulkCreate(users);
         await Project.bulkCreate(projects);
         await Bug.bulkCreate(bugs);
         console.log("BUGABOO!!!");
+        
     
     }catch(error){
         console.log(error);
