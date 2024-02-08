@@ -28,7 +28,7 @@ describe("Bug route testing", () => {
         const response = await request(app).get("/projects/1/bugs");
   
         expect(response.statusCode).toBe(200);
-        expect(JSON.stringify(response.body)).toBe(JSON.stringify(projectBugs));
+        expect(JSON.stringify(response.body)).toEqual(JSON.stringify(projectBugs));
       });
     });
 
