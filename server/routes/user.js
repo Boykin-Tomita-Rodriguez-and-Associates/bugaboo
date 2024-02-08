@@ -1,6 +1,7 @@
 const { Router } = require("express");
 const { User, Project, Bug } = require("../models/index");
 const express = require("express");
+const userProjectRouter = require("./userProject");
 
 const userRouter = Router();
 
@@ -69,30 +70,9 @@ userRouter.put("/:id", async (req, res, next) => {
   }
 });
 
-// userRouter.put("/:id/projects/:projectId", async (req, res, next) => {
-//     try {
-//         //Find user and project
-//         const user = await User.findByPk(req.params.id)
-//         const project = await Project.findByPk(req.params.projectId)
-//         //Associate user and project
-//         await user.addProject(project)
-//         //Return the user with all associated project
-//         const updatedUser = await User.findByPk(req.params.id, {
-//             include: [
-//               {
-//                 model: Project,
-//                 include: [
-//                   {
-//                     model: Bug,
-//                   },
-//                 ],
-//               },
-//             ],
-//           });
-//           res.json(updatedUser);
-//         } catch (error) {
-//           next(error);
-//         }
-//     })
+userRouter.use('/:userId/projects', async (req, res, next) => {
+    req.userId = req.params.userId
+    next()
+}, userProjectRouter)
 
 module.exports = userRouter;
