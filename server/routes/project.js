@@ -71,7 +71,6 @@ projectRouter.delete("/:id", async (req, res, next) => {
 /// Bug Connection 
 
 projectRouter.use('/:projectId/bugs', async(req, res, next)=>{
-  console.log("hello????", req.params)
   req.projectId = req.params.projectId;
   next()
 }, bugRouter);
