@@ -5,11 +5,35 @@ const bugRouter = require("./bug");
 const projectRouter = Router();
 const { requiresAuth } = require('express-openid-connect');
 
+
+const adminMiddleWare = async(req, res, next)=>{
+  console.log(req.oidc.user.email)
+  const user = await User.findAll({
+    where: {
+      email: req.oidc.user.email
+    }
+  });
+  console.log("user:",user) 
+  if(!user[0].isAdmin){
+    console.log("Not an admin!")
+    res.redirect(`/users/${user[0].id}/projects`)
+  }else{
+
+  next()
+  }
+}
+
 //GET projects (admin)
-projectRouter.get("/", requiresAuth(), async (req, res, next) => {
+projectRouter.get("/", requiresAuth(), adminMiddleWare, async (req, res, next) => {
   try {
-    const projects = await Project.findAll({ include: Bug });
-    res.json(projects);
+/////////
+    
+      console.log(req.oidc.user)
+      const projects = await Project.findAll({include: Bug});;
+      res.json(projects);
+    
+/////////
+
   } catch (error) {
     next(error);
   }
