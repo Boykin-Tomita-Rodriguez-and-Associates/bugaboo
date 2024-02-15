@@ -1,8 +1,9 @@
 const bugRouter = require('express').Router(); 
 const { User, Project, Bug } = require("../models/index");
+const { requiresAuth } = require('express-openid-connect');
 
 
-bugRouter.get('/', async(req, res, next) => {
+bugRouter.get('/', requiresAuth(), async(req, res, next) => {
     try{
         let projectId = req.projectId; 
         const project = await Project.findByPk(projectId, {

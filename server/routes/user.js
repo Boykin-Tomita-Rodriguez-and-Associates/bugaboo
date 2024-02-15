@@ -2,11 +2,12 @@ const { Router } = require("express");
 const { User, Project, Bug } = require("../models/index");
 const express = require("express");
 const userProjectRouter = require("./userProject");
+const { requiresAuth } = require('express-openid-connect');
 
 const userRouter = Router();
 
 //GET all users (admin)
-userRouter.get("/", async (req, res, next) => {
+userRouter.get("/", requiresAuth(), async (req, res, next) => {
   try {
     const users = await User.findAll({
       //Include projects and associated bugs
@@ -28,7 +29,7 @@ userRouter.get("/", async (req, res, next) => {
 });
 
 //GET one user
-userRouter.get("/:id", async (req, res, next) => {
+userRouter.get("/:id", requiresAuth(), async (req, res, next) => {
   try {
     const user = await User.findByPk(req.params.id, {
       include: [
@@ -49,7 +50,7 @@ userRouter.get("/:id", async (req, res, next) => {
 });
 
 //CREATE a user
-userRouter.post("/", async (req, res, next) => {
+userRouter.post("/", requiresAuth(), async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const newUser = await User.create({ email, password });
@@ -60,7 +61,7 @@ userRouter.post("/", async (req, res, next) => {
 });
 
 //UPDATE a user
-userRouter.put("/:id", async (req, res, next) => {
+userRouter.put("/:id", requiresAuth(), async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const updatedUser = await User.update({ email, password });

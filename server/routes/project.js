@@ -3,8 +3,10 @@ const { User, Project, Bug } = require("../models/index");
 const express = require("express");
 const bugRouter = require("./bug");
 const projectRouter = Router();
-//GET projects (users & admin)
-projectRouter.get("/", async (req, res, next) => {
+const { requiresAuth } = require('express-openid-connect');
+
+//GET projects (admin)
+projectRouter.get("/", requiresAuth(), async (req, res, next) => {
   try {
     const projects = await Project.findAll({ include: Bug });
     res.json(projects);
@@ -14,7 +16,7 @@ projectRouter.get("/", async (req, res, next) => {
 });
 
 //GET one project (user who owns & admin)
-projectRouter.get("/:id", async (req, res, next) => {
+projectRouter.get("/:id", requiresAuth(), async (req, res, next) => {
   try {
     const id = req.params.id;
     const project = await Project.findByPk(id, { include: Bug });
@@ -25,7 +27,7 @@ projectRouter.get("/:id", async (req, res, next) => {
 });
 
 //CREATE a project (admin)
-projectRouter.post("/", async (req, res, next) => {
+projectRouter.post("/", requiresAuth(), async (req, res, next) => {
   try {
     const { isComplete, name } = req.body;
     const project = await Project.create({ isComplete, name });
@@ -36,7 +38,7 @@ projectRouter.post("/", async (req, res, next) => {
 });
 
 //UPDATE a project
-projectRouter.put("/:id", async (req, res, next) => {
+projectRouter.put("/:id", requiresAuth(), async (req, res, next) => {
     try{
         const id = req.params.id; 
         const {name, isComplete} = req.body
@@ -55,7 +57,7 @@ projectRouter.put("/:id", async (req, res, next) => {
 });
 
 //DELETE a project (admin)
-projectRouter.delete("/:id", async (req, res, next) => {
+projectRouter.delete("/:id", requiresAuth(), async (req, res, next) => {
   try {
     const deletedProject = await Project.destroy({ where: { id: req.params.id } });
     const projects = await Project.findAll({});
