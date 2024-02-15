@@ -1,9 +1,9 @@
 const { faker } = require('@faker-js/faker')
 
 const users = [
-    {email: "dummy@gmail.com", password: 1234},
-    {email: faker.internet.email(), password: 1234},
-    {email: faker.internet.email(), password: 12345}
+    {email: "dummy@gmail.com", password: "1234!Adc", isAdmin: true},
+    {email: "dumm2@gmail.com", password: "1234!Adc"},
+    {email: faker.internet.email(), password: "12345"}
 ];
 const projects = [
     {name: "project1", userId: 1},
