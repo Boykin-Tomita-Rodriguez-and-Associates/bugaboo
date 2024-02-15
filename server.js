@@ -3,6 +3,6 @@ const { db } = require('./server/db')
 const port = 3000
 
 app.listen(port, () => {
-  db.sync({ force: false });
+  db.sync();
   console.log(`App is listening at http://localhost:${port}`);
 });
