@@ -77,4 +77,28 @@ describe("Project testing", () => {
         expect(response.body.name).toBe(updatedProject.name)
     });
   });
+  //Bug Routes
+  describe("Get all bugs for a project", () => {
+    it("successfully retrieves a project's bugs", async () => {
+      const projectBugs = await Bug.findAll({
+          where: {
+              projectId: 1
+          }
+      });
+      const response = await request(app).get("/projects/1/bugs");
+
+      expect(response.statusCode).toBe(200);
+      expect(JSON.stringify(response.body)).toBe(JSON.stringify(projectBugs));
+    });
+  });
+
+  describe("Get a single bug", ()=>{
+      it("retrieves the correct bug", async()=>{
+          const bug = await Bug.findByPk(1); 
+          const response = await request(app).get("/projects/1/bugs/1");
+
+          expect(response.statusCode).toBe(200);
+          expect(JSON.stringify(response.body)).toBe(JSON.stringify(bug))
+      });
+  });
 });
