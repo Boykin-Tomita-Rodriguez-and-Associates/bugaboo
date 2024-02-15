@@ -1,11 +1,11 @@
-const { Sequelize, db } = require('../db')
+const { DataTypes, db } = require('../db')
 
-let Bug = db.define('bug', {
+let Bug = db.define('bugs', {
     isFixed: {
-        type: Sequelize.BOOLEAN,
+        type: DataTypes.BOOLEAN,
         defaultValue: false
      },
-    error: Sequelize.STRING
+    error: DataTypes.STRING
 })
 
 module.exports = Bug

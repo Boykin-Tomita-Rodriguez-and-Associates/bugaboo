@@ -1,11 +1,11 @@
-const { Sequelize, db } = require('../db')
+const { DataTypes, db } = require('../db')
 
-let Project = db.define('project', {
+let Project = db.define('projects', {
     isComplete: {
-       type: Sequelize.BOOLEAN,
+       type: DataTypes.BOOLEAN,
        defaultValue: false
     },
-    name: Sequelize.STRING
+    name: DataTypes.STRING
 });
 
-module.exports = Project
+module.exports = Project 

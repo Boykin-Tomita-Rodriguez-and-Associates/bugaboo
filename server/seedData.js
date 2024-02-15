@@ -6,16 +6,16 @@ const users = [
     {email: faker.internet.email(), password: 12345}
 ];
 const projects = [
-    {name: "project1", userId: 1},
-    {name: "project2", userId: 2},
-    {name: "project3", userId: 2},
+    {name: "project1"},
+    {name: "project2"},
+    {name: "project3"},
 ];
 
 const bugs = [
-    { error: faker.hacker.phrase(), projectId: 1 },
-    { error: faker.hacker.phrase(), projectId: 2 },
-    { error: faker.hacker.phrase(), projectId: 2 },
-    { error: faker.hacker.phrase(), projectId: 3 }
+    { error: faker.hacker.phrase()},
+    { error: faker.hacker.phrase()},
+    { error: faker.hacker.phrase()},
+    { error: faker.hacker.phrase()}
 ];
 
 module.exports = {

@@ -3,7 +3,7 @@ const app = require("../server/app");
 const { User, Project, Bug } = require("../server/models/index");
 const { describe, test, expect } = require("@jest/globals");
 const { db } = require("../server/db");
-const { seed } = require("../server/seed");
+const seed = require("../server/seedFn");
 const { projects, users, bugs } = require("../server/seedData");
 const projectRouter = require("../server/routes/project");
 let projectsLength;
@@ -19,6 +19,7 @@ describe("Project testing", () => {
     const projects = await Project.findAll();
     projectsLength = projects.length;
   });
+  afterEach(async()=> await db.sync({force: true}))
 
   describe("Get all projects", () => {
     it("successfully retrieves all projects", async () => {
@@ -77,4 +78,40 @@ describe("Project testing", () => {
         expect(response.body.name).toBe(updatedProject.name)
     });
   });
+
+  describe("Bug route testing", () => {
+    const testBugData = {
+      error: "You buggin' what? You buggin' who? You buggin' me (bug a boo)",
+    };
+  
+    beforeEach(async () => {
+      await seed();
+      const bugs = await Project.findAll();
+      bugLength = bugs.length;
+    });
+  
+    describe("Get all bugs for a project", () => {
+      it("successfully retrieves a project's bugs", async () => {
+        const projectBugs = await Bug.findAll({
+            where: {
+                projectId: 1
+            }
+        });
+        const response = await request(app).get("/projects/1/bugs");
+  
+        expect(response.statusCode).toBe(200);
+        expect(JSON.stringify(response.body)).toEqual(JSON.stringify(projectBugs));
+      });
+    });
+
+    describe("Get a single bug", ()=>{
+        it("retrieves the correct bug", async()=>{
+            const bug = await Bug.findByPk(1); 
+            const response = await request(app).get("/projects/1/bugs/1");
+
+            expect(response.statusCode).toBe(200);
+            expect(JSON.stringify(response.body)).toBe(JSON.stringify(bug))
+        });
+    });
+});
 });
