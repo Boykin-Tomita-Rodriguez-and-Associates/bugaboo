@@ -5,6 +5,7 @@ const morgan = require("morgan");
 const projectRouter = require("./routes/project");
 const userRouter = require("./routes/user");
 const { auth } = require("express-openid-connect");
+const {User} = require("./models/index");
 
 // Apply authentication middleware
 const { AUTH0_SECRET, AUTH0_AUDIENCE, AUTH0_CLIENT_ID, AUTH0_BASE_URL } =
@@ -36,9 +37,19 @@ app.use("/users", userRouter);
 //   });
 
 // req.isAuthenticated is provided from the auth router
-app.get("/", (req, res) => {
+
+app.get("/", async (req, res) => {
   console.log(req.oidc.user)
   res.send(req.oidc.isAuthenticated() ? "Logged in" : "Logged out");
+  //find User or create if they do not exist already
+  const user = await User.findOrCreate({
+    where:{
+      email: req.oidc.user.email
+    }
+  });
+  console.log(user)
+  //user.isAdmin? -> send to someplace 
+  //!user.isAdmin -> send to /users/userID/projects
 });
 
 module.exports = app;

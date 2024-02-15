@@ -50,7 +50,7 @@ projectRouter.get("/:id", requiresAuth(), async (req, res, next) => {
   }
 });
 
-//CREATE a project (admin)
+//CREATE a project
 projectRouter.post("/", requiresAuth(), async (req, res, next) => {
   try {
     const { isComplete, name } = req.body;
