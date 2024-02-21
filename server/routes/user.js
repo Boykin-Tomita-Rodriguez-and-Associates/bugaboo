@@ -3,12 +3,13 @@ const { User, Project, Bug } = require("../models/index");
 const express = require("express");
 const userProjectRouter = require("./userProject");
 const { requiresAuth } = require('express-openid-connect');
-
+const { currentUser } = require('../../middleware/currentUser');
 const userRouter = Router();
 
 //GET all users (admin)
-userRouter.get("/", requiresAuth(), async (req, res, next) => {
+userRouter.get("/", requiresAuth(), currentUser, async (req, res, next) => {
   try {
+    console.log("I'm the users router, current_user: ", res.locals.user);
     const users = await User.findAll({
       //Include projects and associated bugs
       include: [
