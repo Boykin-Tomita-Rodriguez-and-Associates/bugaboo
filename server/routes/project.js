@@ -87,7 +87,7 @@ projectRouter.delete("/:projectId", requiresAuth(), currentUser, ownerOrAdmin, a
 
 /// Bug Connection 
 
-projectRouter.use('/:projectId/bugs', async(req, res, next)=>{
+projectRouter.use('/:projectId/bugs', requiresAuth(), currentUser, ownerOrAdmin, async(req, res, next)=>{
   req.projectId = req.params.projectId;
   next()
 }, bugRouter);

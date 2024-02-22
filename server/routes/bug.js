@@ -1,16 +1,14 @@
 const bugRouter = require('express').Router(); 
 const { User, Project, Bug } = require("../models/index");
 const { requiresAuth } = require('express-openid-connect');
+const { currentUser } = require('../../middleware/currentUser');
+const { adminProtected } = require("../../middleware/adminProtected");
+const { ownerOrAdmin } = require("../../middleware/ownerOrAdmin");
 
-
-bugRouter.get('/', requiresAuth(), async(req, res, next) => {
+//GET all the bugs for a project
+bugRouter.get('/', async(req, res, next) => {
     try{
-        let projectId = req.projectId; 
-        const project = await Project.findByPk(projectId, {
-            include: {
-                model: Bug
-            }
-        });
+        const project = res.locals.project
         const bugs = project.bugs; 
         console.log(bugs)
         res.json(bugs)
@@ -19,7 +17,7 @@ bugRouter.get('/', requiresAuth(), async(req, res, next) => {
     }
 })
 
-bugRouter.get('/:bugId', requiresAuth(), async(req, res, next) => {
+bugRouter.get('/:bugId', async(req, res, next) => {
     try{
         let projectId = req.projectId; 
         let bugId = req.params.bugId;
@@ -30,7 +28,7 @@ bugRouter.get('/:bugId', requiresAuth(), async(req, res, next) => {
     }
 });
 
-bugRouter.post('/', requiresAuth(), async(req, res, next)=>{
+bugRouter.post('/', async(req, res, next)=>{
     try{
         const projectId = req.projectId;
         const {error, isFixed} = req.body;
@@ -42,7 +40,7 @@ bugRouter.post('/', requiresAuth(), async(req, res, next)=>{
     };
 });
 
-bugRouter.put('/:bugId', requiresAuth(), async(req, res, next)=>{
+bugRouter.put('/:bugId', async(req, res, next)=>{
     try{
         const id = req.params.bugId
         const {error, isFixed} = req.body;
@@ -53,7 +51,7 @@ bugRouter.put('/:bugId', requiresAuth(), async(req, res, next)=>{
     };
 });
 
-bugRouter.delete('/:bugId', requiresAuth(), async(req, res, next)=>{
+bugRouter.delete('/:bugId', async(req, res, next)=>{
     try{
         const id = req.params.bugId; 
         await Bug.destroy({ where: { id: req.params.bugId } });
