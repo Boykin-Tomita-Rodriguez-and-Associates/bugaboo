@@ -43,7 +43,7 @@ projectRouter.get("/:projectId", requiresAuth(), currentUser, ownerOrAdmin, asyn
   }
 });
 
-//CREATE a project (admin)
+//CREATE
 projectRouter.post("/", requiresAuth(), currentUser, async (req, res, next) => {
   try {
     const user = res.locals.user[0]
@@ -56,17 +56,13 @@ projectRouter.post("/", requiresAuth(), currentUser, async (req, res, next) => {
 });
 
 //UPDATE a project
-projectRouter.put("/:projectId", requiresAuth(), currentUser, async (req, res, next) => {
+projectRouter.put("/:projectId", requiresAuth(), currentUser, ownerOrAdmin, async (req, res, next) => {
     try{
         const id = req.params.projectId; 
+        const project = res.locals.project
         const {name, isComplete} = req.body
-        await Project.update({name, isComplete}, {where: {id: id}});
-       //Get the newly updated project   
-       const updatedProject = await Project.findByPk(id, {
-            include: {
-               model: Bug
-            }
-        });
+        const updatedProject = await project.update({name, isComplete});
+        console.log(updatedProject)
         //Send it back
         res.json(updatedProject);
     }catch(error){
@@ -75,14 +71,15 @@ projectRouter.put("/:projectId", requiresAuth(), currentUser, async (req, res, n
 });
 
 //DELETE a project (admin)
-projectRouter.delete("/:id", requiresAuth(), async (req, res, next) => {
+projectRouter.delete("/:projectId", requiresAuth(), currentUser, ownerOrAdmin, async (req, res, next) => {
   try {
-    const deletedProject = await Project.destroy({ where: { id: req.params.id } });
-    const projects = await Project.findAll({});
+    const project = res.locals.project;
+    const deletedProject = await project.destroy();
+    
     if (!deletedProject) {
       throw new Error("Project could not be deleted.");
     }
-    res.json(projects);
+    res.json({message: `${project.name} was deleted!`});
   } catch (error) {
     next(error);
   }
