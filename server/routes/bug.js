@@ -19,7 +19,7 @@ bugRouter.get('/', requiresAuth(), async(req, res, next) => {
     }
 })
 
-bugRouter.get('/:bugId', async(req, res, next) => {
+bugRouter.get('/:bugId', requiresAuth(), async(req, res, next) => {
     try{
         let projectId = req.projectId; 
         let bugId = req.params.bugId;
@@ -29,5 +29,38 @@ bugRouter.get('/:bugId', async(req, res, next) => {
         next(error)
     }
 });
+
+bugRouter.post('/', requiresAuth(), async(req, res, next)=>{
+    try{
+        const projectId = req.projectId;
+        const {error, isFixed} = req.body;
+
+        const newBug = await Bug.create({error, isFixed, projectId});
+        res.json(newBug);
+    }catch(error){
+        next(error);
+    };
+});
+
+bugRouter.put('/:bugId', requiresAuth(), async(req, res, next)=>{
+    try{
+        const id = req.params.bugId
+        const {error, isFixed} = req.body;
+        const updatedBug = await Bug.update({error, isFixed}, {where: {id: req.params.bugId}});
+        res.json(updatedBug);
+    }catch(error){
+        next(error);
+    };
+});
+
+bugRouter.delete('/:bugId', requiresAuth(), async(req, res, next)=>{
+    try{
+        const id = req.params.bugId; 
+        await Bug.destroy({ where: { id: req.params.bugId } });
+        res.json({message: "Bug deleted"});
+    }catch(error){
+        next(error)
+    }
+})
 
 module.exports = bugRouter;

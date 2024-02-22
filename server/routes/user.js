@@ -3,7 +3,7 @@ const { User, Project, Bug } = require("../models/index");
 const express = require("express");
 const userProjectRouter = require("./userProject");
 const { requiresAuth } = require('express-openid-connect');
-
+const { currentUser } = require('../../middleware/currentUser');
 const userRouter = Router();
 
 const adminMiddleWare = async(req, res, next)=>{
@@ -25,6 +25,7 @@ const adminMiddleWare = async(req, res, next)=>{
 //If user is an admin, they can see all, else user is rerouted to their dashboard
 userRouter.get("/", requiresAuth(), adminMiddleWare, async (req, res, next) => {
   try {
+    console.log("I'm the users router, current_user: ", res.locals.user);
     const users = await User.findAll({
       //Include projects and associated bugs
       include: [
