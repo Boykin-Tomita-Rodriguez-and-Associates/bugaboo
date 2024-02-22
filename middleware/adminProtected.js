@@ -4,7 +4,7 @@ const adminProtected = async(req, res, next)=>{
     //add if !user check?
     //if user is not admin redirect them to see their project(s) only
     if(!user.isAdmin){
-      res.redirect(`/users/${user.id}/projects`)
+      res.status(403).json({error: "Forbidden: Admin access only"})
     }else{
     next()
     }
