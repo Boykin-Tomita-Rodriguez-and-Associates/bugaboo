@@ -6,6 +6,7 @@ const ownerOrAdmin = async (req, res, next) => {
     const id = req.params.projectId
     const project = await Project.findByPk(id, { include: Bug });
     if(user.isAdmin || project.userId === user.id){
+      res.locals.project = project
       next()
     }else{
       res.redirect(`/users/${user.id}/projects`)
@@ -19,7 +20,6 @@ const ownerOrAdmin = async (req, res, next) => {
       res.redirect(`/users/${user.id}/projects`)
     }
   }
-    
   }
 
   module.exports = { ownerOrAdmin }
