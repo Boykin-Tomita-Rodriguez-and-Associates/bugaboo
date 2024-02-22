@@ -10,7 +10,7 @@ const userRouter = Router();
 
 //GET all users 
 //If user is an admin, they can see all, else user is rerouted to their dashboard
-userRouter.get("/", requiresAuth(), adminProtected, async (req, res, next) => {
+userRouter.get("/", requiresAuth(), currentUser, adminProtected, async (req, res, next) => {
   try {
     console.log("I'm the users router, current_user: ", res.locals.user);
     const users = await User.findAll({
@@ -34,9 +34,9 @@ userRouter.get("/", requiresAuth(), adminProtected, async (req, res, next) => {
 
 //GET one user
 //same middleware as above
-userRouter.get("/:id", requiresAuth(), adminProtected, async (req, res, next) => {
+userRouter.get("/:userId", requiresAuth(), currentUser, ownerOrAdmin, async (req, res, next) => {
   try {
-    const user = await User.findByPk(req.params.id, {
+    const user = await User.findByPk(req.params.id/* , {
       include: [
         {
           model: Project,
@@ -47,7 +47,7 @@ userRouter.get("/:id", requiresAuth(), adminProtected, async (req, res, next) =>
           ],
         },
       ],
-    });
+    } */);
     res.json(user);
   } catch (error) {
     next(error);
