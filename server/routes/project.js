@@ -9,12 +9,13 @@ const { ownerOrAdmin } = require("../../middleware/ownerOrAdmin");
 
 
 
-//GET projects (admin)
+//GET projects (admin gets to see all projects, a user sees their projects/dashboard)
+//requires auth, gets current user, protects route for owner or admin, shows appropriate projects
 projectRouter.get("/", requiresAuth(), currentUser, async (req, res, next) => {
   try {
       const user = res.locals.user[0]
-     
       let projects; 
+
       if(user.isAdmin){
         projects = await Project.findAll({include: Bug});;
         
@@ -33,17 +34,17 @@ projectRouter.get("/", requiresAuth(), currentUser, async (req, res, next) => {
 });
 
 //GET one project (user who owns & admin)
-projectRouter.get("/:id", requiresAuth(), currentUser, ownerOrAdmin, async (req, res, next) => {
+projectRouter.get("/:projectId", requiresAuth(), currentUser, ownerOrAdmin, async (req, res, next) => {
   try {
-    const id = req.params.id
-    const userId = res.locals.user[0].id
+    const id = req.params.projectId
+    const user = res.locals.user[0]
     const project = await Project.findByPk(id, { include: Bug });
-    console.log(userId)
-    if(project.userId === userId){
+
+    /* if(user.isAdmin || project.userId === user.id){ */
       res.json(project);
-    }else{
-      res.redirect(`/users/${userId}}/projects`)
-    }
+   /*  }else{
+      res.redirect(`/users/${user.id}/projects`)
+    } */
   } catch (error) {
     next(error);
   }
