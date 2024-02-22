@@ -1,7 +1,6 @@
 const { Router } = require("express");
 const { User, Project, Bug } = require("../models/index");
 const express = require("express");
-const userProjectRouter = require("./userProject");
 const { requiresAuth } = require('express-openid-connect');
 const { currentUser } = require('../../middleware/currentUser');
 const { adminProtected } = require("../../middleware/adminProtected");
@@ -36,26 +35,20 @@ userRouter.get("/", requiresAuth(), currentUser, adminProtected, async (req, res
 //same middleware as above
 userRouter.get("/:userId", requiresAuth(), currentUser, ownerOrAdmin, async (req, res, next) => {
   try {
-    const user = await User.findByPk(req.params.id/* , {
-      include: [
-        {
-          model: Project,
-          include: [
-            {
-              model: Bug,
-            },
-          ],
-        },
-      ],
-    } */);
-    res.json(user);
+    const user = res.locals.user[0]
+    if(user.isAdmin){
+      const foundUser = await User.findByPk(req.params.userId)
+      res.json(foundUser)
+    } else {
+      res.json(user);
+    }
   } catch (error) {
     next(error);
   }
 });
 
 //CREATE a user
-userRouter.post("/", requiresAuth(), adminProtected, async (req, res, next) => {
+userRouter.post("/", requiresAuth(), currentUser, adminProtected, async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const newUser = await User.create({ email, password });
@@ -66,28 +59,23 @@ userRouter.post("/", requiresAuth(), adminProtected, async (req, res, next) => {
 });
 
 //UPDATE a user
-
-userRouter.put("/:id", requiresAuth(), ownerOrAdmin, async (req, res, next) => {
+userRouter.put("/:userId", requiresAuth(), currentUser, ownerOrAdmin, async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const user = res.locals.user[0]
+    const { email, password } = req.body; 
+    if(user.isAdmin){
     await User.update(
-      { email, password },
-      {
-      where: {
-        id: req.params.id
+        { email, password },
+        {where: {id: req.params.userId}})
+        const updatedUser = await User.findByPk(req.params.userId)
+      res.json(updatedUser)
+      } else {
+        const updatedUser = await user.update({ email, password })
+        res.json(updatedUser)
       }
-    }
-      );
-    const user = await User.findByPk(req.params.id)
-    res.json(user);
   } catch (error) {
     next(error);
   }
 });
-
-userRouter.use('/:userId/projects', async (req, res, next) => {
-    req.userId = req.params.userId
-    next()
-}, userProjectRouter)
 
 module.exports = userRouter;

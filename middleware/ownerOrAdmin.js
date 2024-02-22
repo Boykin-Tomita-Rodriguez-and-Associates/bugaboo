@@ -9,7 +9,7 @@ const ownerOrAdmin = async (req, res, next) => {
       res.locals.project = project
       next()
     }else{
-      res.redirect(`/users/${user.id}/projects`)
+      res.redirect(`/projects`)
     }
   /////////////////  
   }else if(req.params.userId){
@@ -17,7 +17,7 @@ const ownerOrAdmin = async (req, res, next) => {
     if(user.isAdmin || user.id === parseInt(req.params.userId)){
       next()
     } else {
-      res.redirect(`/users/${user.id}/projects`)
+      res.redirect(`/projects`)
     }
   }
   }
