@@ -36,26 +36,19 @@ projectRouter.get("/", requiresAuth(), currentUser, async (req, res, next) => {
 //GET one project (user who owns & admin)
 projectRouter.get("/:projectId", requiresAuth(), currentUser, ownerOrAdmin, async (req, res, next) => {
   try {
-    const id = req.params.projectId
-    const user = res.locals.user[0]
-    const project = await Project.findByPk(id, { include: Bug });
-
-    /* if(user.isAdmin || project.userId === user.id){ */
+    const project = res.locals.project
       res.json(project);
-   /*  }else{
-      res.redirect(`/users/${user.id}/projects`)
-    } */
   } catch (error) {
     next(error);
   }
 });
 
 //CREATE a project (admin)
-
-projectRouter.post("/", requiresAuth(), async (req, res, next) => {
+projectRouter.post("/", requiresAuth(), currentUser, async (req, res, next) => {
   try {
+    const user = res.locals.user[0]
     const { isComplete, name } = req.body;
-    const project = await Project.create({ isComplete, name });
+    const project = await Project.create({ isComplete, name, userId: user.id });
     res.json(project);
   } catch (error) {
     next(error);
@@ -63,9 +56,9 @@ projectRouter.post("/", requiresAuth(), async (req, res, next) => {
 });
 
 //UPDATE a project
-projectRouter.put("/:id", requiresAuth(), currentUser, async (req, res, next) => {
+projectRouter.put("/:projectId", requiresAuth(), currentUser, async (req, res, next) => {
     try{
-        const projectId = req.params.id; 
+        const id = req.params.projectId; 
         const {name, isComplete} = req.body
         await Project.update({name, isComplete}, {where: {id: id}});
        //Get the newly updated project   
