@@ -4,26 +4,13 @@ const express = require("express");
 const userProjectRouter = require("./userProject");
 const { requiresAuth } = require('express-openid-connect');
 const { currentUser } = require('../../middleware/currentUser');
+const { adminProtected } = require("../../middleware/adminProtected");
+const { ownerOrAdmin } = require("../../middleware/ownerOrAdmin");
 const userRouter = Router();
 
-const adminMiddleWare = async(req, res, next)=>{
-  // find the user by their email
-  const user = await User.findAll({
-    where: {
-      email: req.oidc.user.email
-    }
-  });
-  //add if !user check?
-  //if user is not admin redirect them to see their project(s) only
-  if(!user[0].isAdmin){
-    res.redirect(`/users/${user[0].id}/projects`)
-  }else{
-  next()
-  }
-}
 //GET all users 
 //If user is an admin, they can see all, else user is rerouted to their dashboard
-userRouter.get("/", requiresAuth(), adminMiddleWare, async (req, res, next) => {
+userRouter.get("/", requiresAuth(), adminProtected, async (req, res, next) => {
   try {
     console.log("I'm the users router, current_user: ", res.locals.user);
     const users = await User.findAll({
@@ -47,7 +34,7 @@ userRouter.get("/", requiresAuth(), adminMiddleWare, async (req, res, next) => {
 
 //GET one user
 //same middleware as above
-userRouter.get("/:id", requiresAuth(), adminMiddleWare, async (req, res, next) => {
+userRouter.get("/:id", requiresAuth(), adminProtected, async (req, res, next) => {
   try {
     const user = await User.findByPk(req.params.id, {
       include: [
@@ -68,7 +55,7 @@ userRouter.get("/:id", requiresAuth(), adminMiddleWare, async (req, res, next) =
 });
 
 //CREATE a user
-userRouter.post("/", requiresAuth(), adminMiddleWare, async (req, res, next) => {
+userRouter.post("/", requiresAuth(), adminProtected, async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const newUser = await User.create({ email, password });
@@ -79,26 +66,8 @@ userRouter.post("/", requiresAuth(), adminMiddleWare, async (req, res, next) => 
 });
 
 //UPDATE a user
-//none??
-//---> if owner, next
-//---> if not owner, throw error
-//if admin next
 
-const isOwner = async (req, res, next) => {
-  const user = await User.findOne({
-    where: {
-      email: req.oidc.user.email
-    }
-  })
-  if(user.isAdmin || user.id == req.params.id){
-    next()
-  } else {
-    res.redirect(`/users/${user.id}/projects`)
-  }
-}
-
-
-userRouter.put("/:id", requiresAuth(), isOwner, async (req, res, next) => {
+userRouter.put("/:id", requiresAuth(), ownerOrAdmin, async (req, res, next) => {
   try {
     const { email, password } = req.body;
     await User.update(

@@ -5,22 +5,9 @@ const bugRouter = require("./bug");
 const projectRouter = Router();
 const { requiresAuth } = require('express-openid-connect');
 const { currentUser } = require('../../middleware/currentUser');
+const { ownerOrAdmin } = require("../../middleware/ownerOrAdmin");
 
-const adminMiddleWare = async(req, res, next)=>{
-  // find the user by their email
-  const user = await User.findAll({
-    where: {
-      email: req.oidc.user.email
-    }
-  });
-  //add if !user check?
-  //if user is not admin redirect them to see their project(s) only
-  if(!user[0].isAdmin){
-    res.redirect(`/users/${user[0].id}/projects`)
-  }else{
-  next()
-  }
-}
+
 
 //GET projects (admin)
 projectRouter.get("/", requiresAuth(), currentUser, async (req, res, next) => {
@@ -46,8 +33,7 @@ projectRouter.get("/", requiresAuth(), currentUser, async (req, res, next) => {
 });
 
 //GET one project (user who owns & admin)
-projectRouter.get("/:id", requiresAuth(), currentUser, async (req, res, next) => {
-// what would middleware look like here?
+projectRouter.get("/:id", requiresAuth(), currentUser, ownerOrAdmin, async (req, res, next) => {
   try {
     const id = req.params.id
     const userId = res.locals.user[0].id
