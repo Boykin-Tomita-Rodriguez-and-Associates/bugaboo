@@ -7,6 +7,7 @@ const { seed } = require("../server/seed");
 const { projects, users, bugs } = require("../server/seedData");
 const projectRouter = require("../server/routes/project");
 let projectsLength;
+let usersLength;
 
 //Mock Auth0
 jest.mock("express-openid-connect", () => ({
@@ -30,6 +31,11 @@ describe("Project testing", () => {
     name: "Project Bugaboo",
   };
 
+  const testUserData = {
+    email: "destinyschild@gmail.com",
+    password: "july1499"
+  }
+
   let admin;
   let user;
   
@@ -37,7 +43,9 @@ describe("Project testing", () => {
   beforeEach(async () => {
     await seed();
     const projects = await Project.findAll();
+    const users = await User.findAll();
     projectsLength = projects.length;
+    usersLength = users.length
     jest.clearAllMocks()
 
     admin = await User.findByPk(1)
@@ -47,7 +55,7 @@ describe("Project testing", () => {
 
 
   describe("Get all projects", () => {
-    it("successfully retrieves all projects", async () => {
+    it("Successfully retrieves all projects", async () => {
       const allProjects = await Project.findAll({ include: [{ model: Bug }] });
       const response = await request(app)
       .get("/projects")
@@ -150,7 +158,9 @@ describe("Project testing", () => {
               projectId: 1
           }
       });
-      const response = await request(app).get("/projects/1/bugs");
+      const response = await request(app)
+        .get("/projects/1/bugs")
+        .set("Authorization", `Bearer ${admin.email}`)
 
       expect(response.statusCode).toBe(200);
       expect(JSON.stringify(response.body)).toBe(JSON.stringify(projectBugs));
@@ -160,10 +170,111 @@ describe("Project testing", () => {
   describe("Get a single bug", ()=>{
       it("retrieves the correct bug", async()=>{
           const bug = await Bug.findByPk(1); 
-          const response = await request(app).get("/projects/1/bugs/1");
+          const response = await request(app)
+            .get("/projects/1/bugs/1")
+            .set("Authorization", `Bearer ${admin.email}`)
 
           expect(response.statusCode).toBe(200);
           expect(JSON.stringify(response.body)).toBe(JSON.stringify(bug))
       });
   });
+
+  //User tests
+  describe("Get all users", () => {
+    it("Successfully retrieves all users", async ()=> {
+      const allUsers = await User.findAll({
+        //Include projects and associated bugs
+        include: [
+          {
+            model: Project,
+            include: [
+              {
+                model: Bug,
+              },
+            ],
+          },
+        ],
+      });
+      const response = await request(app)
+        .get("/users")
+        .set("Authorization", `Bearer ${admin.email}`)
+      expect(response.statusCode).toBe(200);
+      expect(JSON.stringify(response.body)).toBe(JSON.stringify(allUsers));
+    });
+
+    it("Prevents a non-admin user from retrieving all users", async ()=> {
+      const allUsers = await User.findAll({
+        //Include projects and associated bugs
+        include: [
+          {
+            model: Project,
+            include: [
+              {
+                model: Bug,
+              },
+            ],
+          },
+        ],
+      });
+      const response = await request(app)
+        .get("/users")
+        .set("Authorization", `Bearer ${user.email}`)
+      expect(response.statusCode).toBe(403);
+    })
+  })
+
+  describe("Get one project", ()=> {
+     it("Does not return another user if requester is not admin", async ()=> {
+    const oneUser = await User.findByPk(3)
+    const response = await request(app)
+      .get("/users/2")
+      .set("Authorization", `Bearer ${oneUser.email}`)
+    expect(response.statusCode).toBe(403)
+  })
+
+  it("Returns one user for admin", async () => {
+    const oneUser = await User.findByPk(2)
+    const response = await request(app)
+      .get("/users/2")
+      .set("Authorization", `Bearer ${admin.email}`)
+    expect(response.statusCode).toBe(200)
+    expect(JSON.stringify(response.body)).toBe(JSON.stringify(oneUser))
+  })
+  })
+ 
+  describe("Create users", ()=> {
+    it("Successfully creates a user", async ()=> {
+    const newUser = await request(app)
+    .post("/users")
+    .type("json")
+    .set("Authorization", `Bearer ${admin.email}`)
+    .send(testUserData);
+  const response = await request(app)
+    .get(`/users/${newUser.body.id}`)
+    .set("Authorization", `Bearer ${admin.email}`)
+  expect(newUser.statusCode).toBe(200);
+  expect(response.body.id).toBe(newUser.body.id);
+  })
+  })
+  
+  describe("Update a user", ()=> {
+    it("Prevents a non-admin user from updating other users", async ()=> {
+      const response = await request(app)
+        .put("/users/3")
+        .send({password: "thewritingsonthewall"})
+        .set("Authorization", `Bearer ${user.email}`)
+      const updatedUser = await User.findByPk(3)
+      expect(response.statusCode).toBe(403)
+    })
+
+    it("Allows admin to update a user", async ()=> {
+      const response = await request(app)
+        .put("/users/3")
+        .send({password: "thewritingsonthewall"})
+        .set("Authorization", `Bearer ${admin.email}`)
+      const updatedUser = await User.findByPk(3)
+      expect(response.statusCode).toBe(200)
+      expect(response.body.password).toBe(updatedUser.password)
+    })
+  })
 });
