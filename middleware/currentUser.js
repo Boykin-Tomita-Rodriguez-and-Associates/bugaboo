@@ -9,7 +9,7 @@ const currentUser = async(req, res, next) => {
         }
         });
         res.locals.user = user;
-        console.log("current user: ",res.locals.user)
+        //console.log("current user: ",res.locals.user)
         next();
       }catch(err){
         console.log(err);

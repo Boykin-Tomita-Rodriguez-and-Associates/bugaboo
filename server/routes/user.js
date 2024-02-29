@@ -11,7 +11,7 @@ const userRouter = Router();
 //If user is an admin, they can see all, else user is rerouted to their dashboard
 userRouter.get("/", requiresAuth(), currentUser, adminProtected, async (req, res, next) => {
   try {
-    console.log("I'm the users router, current_user: ", res.locals.user);
+   // console.log("I'm the users router, current_user: ", res.locals.user);
     const users = await User.findAll({
       //Include projects and associated bugs
       include: [

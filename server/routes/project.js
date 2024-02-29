@@ -62,7 +62,7 @@ projectRouter.put("/:projectId", requiresAuth(), currentUser, ownerOrAdmin, asyn
         const project = res.locals.project
         const {name, isComplete} = req.body
         const updatedProject = await project.update({name, isComplete});
-        console.log(updatedProject)
+        //console.log(updatedProject)
         //Send it back
         res.json(updatedProject);
     }catch(error){

@@ -7,6 +7,7 @@ const { seed } = require("../server/seed");
 const { projects, users, bugs } = require("../server/seedData");
 const projectRouter = require("../server/routes/project");
 let projectsLength;
+let bugsLength;
 let usersLength;
 
 //Mock Auth0
@@ -36,6 +37,10 @@ describe("Project testing", () => {
     password: "july1499"
   }
 
+  const testBugData = {
+    error: "You buggin' what? You buggin' who? You buggin' me (bug a boo)"
+  }
+
   let admin;
   let user;
   
@@ -44,6 +49,8 @@ describe("Project testing", () => {
     await seed();
     const projects = await Project.findAll();
     const users = await User.findAll();
+    const bugs = await Bug.findAll();
+    bugsLength = bugs.length;
     projectsLength = projects.length;
     usersLength = users.length
     jest.clearAllMocks()
@@ -165,6 +172,13 @@ describe("Project testing", () => {
       expect(response.statusCode).toBe(200);
       expect(JSON.stringify(response.body)).toBe(JSON.stringify(projectBugs));
     });
+
+    it("prevents non owners from accessing a project's bugs", async()=>{
+      const response = await request(app)
+          .get("/projects/1/bugs")
+          .set("Authorization", `Bearer ${user.email}`);
+      expect(response.statusCode).toBe(403);    
+    });
   });
 
   describe("Get a single bug", ()=>{
@@ -177,6 +191,84 @@ describe("Project testing", () => {
           expect(response.statusCode).toBe(200);
           expect(JSON.stringify(response.body)).toBe(JSON.stringify(bug))
       });
+
+      it("prevents non owners from accessing a project's bug", async()=>{
+        const response = await request(app)
+            .get("/projects/1/bugs/1")
+            .set("Authorization", `Bearer ${user.email}`);
+        expect(response.statusCode).toBe(403);    
+      });
+  });
+
+  describe("Create a bug", ()=>{
+    it("Successfully creates a bug", async () => {
+      const responsePost = await request(app)
+        .post("/projects/1/bugs")
+        .type("json")
+        .set("Authorization", `Bearer ${admin.email}`)
+        .send(testProjectData);
+      
+        
+        const response = await request(app)
+        .get(`/projects/1/bugs/${responsePost.body.id}`)
+        .set("Authorization", `Bearer ${admin.email}`)
+
+      expect(responsePost.statusCode).toBe(200);
+      expect(response.body.id).toBe(responsePost.body.id);
+    });
+
+    it("Successfully prevents a user from adding bugs to a project that isn't theirs", async () => {
+      const response = await request(app)
+        .put("/projects/1/bugs")
+        .send({error: "So no I don't want your number, No, I don't wanna give you mine"})
+        .set("Authorization", `Bearer ${user.email}`)
+        expect(response.statusCode).toBe(403);
+    });
+  });
+
+  describe("Update Bug", ()=>{
+    it("allows a user to update their bugs", async()=>{
+      const responsePut = await request(app)
+      .put("/projects/1/bugs/1")
+      .type("json")
+      .set("Authorization", `Bearer ${admin.email}`)
+      .send({isFixed: true});
+      
+      const response = await request(app)
+        .get(`/projects/1/bugs/${responsePut.body.id}`)
+        .set("Authorization", `Bearer ${admin.email}`)
+
+      expect(responsePut.statusCode).toBe(200);
+      expect(response.body.id).toBe(responsePut.body.id);
+    });
+
+    it("prevents non owners from updating bugs", async()=>{
+      const responsePut = await request(app)
+      .put("/projects/1/bugs/1")
+      .type("json")
+      .set("Authorization", `Bearer ${user.email}`)
+      .send({isFixed: true});
+
+      expect(responsePut.statusCode).toBe(403);
+    });
+  });
+
+  describe("Delete Bug", ()=>{
+    it("Successfully deletes a bug", async () => {
+      const response = await request(app)
+        .delete("/projects/1/bugs/1")
+        .set("Authorization", `Bearer ${admin.email}`)
+      const bugs = await Bug.findAll();
+      expect(response.statusCode).toEqual(200);
+      expect(bugs.length).toEqual(bugsLength - 1);
+    });
+
+    it("Prevents non-owners from deleting a bug", async () => {
+      const response = await request(app)
+        .delete("/projects/1/bugs/1")
+        .set("Authorization", `Bearer ${user.email}`)
+      expect(response.statusCode).toEqual(403);
+    })
   });
 
   //User tests
@@ -223,7 +315,7 @@ describe("Project testing", () => {
     })
   })
 
-  describe("Get one project", ()=> {
+  describe("Get one user", ()=> {
      it("Does not return another user if requester is not admin", async ()=> {
     const oneUser = await User.findByPk(3)
     const response = await request(app)

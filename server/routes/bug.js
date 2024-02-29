@@ -6,7 +6,7 @@ bugRouter.get('/', async(req, res, next) => {
     try{
         const project = res.locals.project
         const bugs = project.bugs; 
-        console.log(bugs)
+       // console.log(bugs)
         res.json(bugs)
     }catch(error){
         next(error)
@@ -25,7 +25,6 @@ bugRouter.get('/:bugId', async(req, res, next) => {
 
 bugRouter.post('/', async(req, res, next)=>{
     try{
-        console.log("HELLOOOO", res.locals.project.id)
         const projectId = res.locals.project.id;
         const {error, isFixed} = req.body;
         const newBug = await Bug.create({error, isFixed, projectId});
